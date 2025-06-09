@@ -7,6 +7,7 @@ from utils import carregar_imagem, salvar_imagem
 
 import numpy as np
 from PIL import Image
+import io
 from filtros import aplicar_filtro
 
 st.set_page_config(page_title="Visualizador de Imagens", layout="wide")
@@ -49,8 +50,16 @@ if uploaded_file:
         else:
             st.image(cv2.cvtColor(img_filtrada, cv2.COLOR_BGR2RGB), use_container_width=True)
 
-    # Prepara a imagem para download
-    result_rgb = img_filtrada if len(img_filtrada.shape) == 2 else cv2.cvtColor(img_filtrada, cv2.COLOR_BGR2RGB)
-    result_pil = Image.fromarray(result_rgb)
+    # Converte a imagem filtrada para PIL
+    if len(img_filtrada.shape) == 2:
+        result_pil = Image.fromarray(img_filtrada)
+    else:
+        result_pil = Image.fromarray(cv2.cvtColor(img_filtrada, cv2.COLOR_BGR2RGB))
 
-    st.download_button("Baixar imagem filtrada", data=result_pil.tobytes(), file_name="imagem_filtrada.png", mime="image/png")
+    # Salva a imagem em bytes para download
+    buf = io.BytesIO()
+    result_pil.save(buf, format="PNG")
+    byte_im = buf.getvalue()
+
+    # Botão de download
+    st.download_button("Baixar imagem filtrada", data=byte_im, file_name="imagem_filtrada.png", mime="image/png")
